@@ -1,0 +1,115 @@
+import org.gradle.internal.os.OperatingSystem;
+
+apply from: 'version.gradle'
+apply from: 'http://artifactory.caplin.com/caplin-releng/com/caplin/gradle/plugins/caplin-version/1.1.0/caplin-version-1.1.0.gradle'
+
+apply plugin: 'java'
+apply plugin: 'c'
+apply plugin: 'maven-publish'
+
+group = 'com.caplin.platform.components.codelibrary'
+
+tasks.printVersion.execute()
+defaultTasks 'printVersion'
+
+repositories {
+   maven { url "http://artifactory.caplin.com/artifactory/repo1/" }
+}
+
+dependencies {
+   testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+project.ext {
+    jdkDir = System.getenv().JAVA_HOME
+    
+    if (OperatingSystem.current().isWindows()) {
+        headersDir = 'win32'
+        extension = 'dll'
+        platformClassifier = 'win64'
+    } else if (OperatingSystem.current().isLinux()) {
+        headersDir = 'linux'
+        extension = 'so'
+        platformClassifier = 'linux'
+    } else if (OperatingSystem.current().isMacOsX()) {
+        headersDir = 'darwin'
+        extension = 'dylib'
+        platformClassifier = 'darwin'
+    }
+}
+
+model {
+    platforms {
+        x64 {
+            architecture "x86_64"
+        }
+    }
+    binaries {
+        all {
+            if (toolChain in VisualCpp) {
+                cCompiler.define "WIN"
+            }
+        }
+    }
+    components {
+        nano_time(NativeLibrarySpec) {
+            targetPlatform "x64"
+            sources {
+                c {
+                    source {
+                        srcDir "src/native"
+                        include "**/*.c"
+                    }
+                    exportedHeaders {
+                        srcDirs "src/native", "$jdkDir/include", "$jdkDir/include/$headersDir"
+                        include "**/*.h"
+                    }
+                }
+            }
+        }
+    }
+}
+
+def nativeLibPath = "build/libs/nano_time/shared"
+
+jar {
+    into('native') {
+        from nativeLibPath
+        include '*.dll'
+        include '*.so'
+        include '*.dylib'
+        rename { String fileName ->
+            fileName.replace("libnano_time", "nano_time")
+        }
+    }
+    classifier = platformClassifier
+}
+jar.dependsOn tasks.matching { it.name.startsWith("nano_time") }
+
+task createTestNativeDependenciesDirectory(type: Copy) {
+    from nativeLibPath
+    into 'build/resources/test/native'
+    include '*.dll'
+    include '*.so'
+    include '*.dylib'
+    rename { String fileName ->
+        fileName.replace("libnano_time", "nano_time")
+    }
+}
+test.dependsOn createTestNativeDependenciesDirectory
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            url "http://artifactory.caplin.com/artifactory/caplin-ci/"
+        }
+    }
+}
