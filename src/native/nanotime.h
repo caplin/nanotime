@@ -10,9 +10,9 @@ extern "C" {
 /*
  * Class:     com_caplin_time_NanoClock
  * Method:    clock_gettime
- * Signature: ()[J
+ * Signature: ()J
  */
-JNIEXPORT jlongArray JNICALL Java_com_caplin_time_NanoClock_clock_1gettime
+JNIEXPORT jlong JNICALL Java_com_caplin_time_NanoClock_clock_1gettime
   (JNIEnv *, jobject);
 
 #ifdef __cplusplus

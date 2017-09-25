@@ -11,53 +11,47 @@ typedef int clockid_t;
 #define exp7           10000000i64     //1E+7     //C-file part
 #define exp9         1000000000i64     //1E+9
 #define w2ux 116444736000000000i64     //1.jan1601 to 1.jan1970
+
+int clock_gettime(clockid_t clk_id, struct timespec *tp);
 #endif
 
-JNIEXPORT jlongArray JNICALL Java_com_caplin_time_NanoClock_clock_1gettime(JNIEnv *env, jobject thisObj) {
+JNIEXPORT jlong JNICALL Java_com_caplin_time_NanoClock_clock_1gettime(JNIEnv *env, jobject thisObj) {
     struct timespec tp;
-	jlongArray result = (*env)->NewLongArray(env, 2);
-
-    if (result == NULL) {
-        return NULL; /* out of memory error thrown */
-    }
-
+    
     clock_gettime(CLOCK_REALTIME, &tp);
-
-    (*env)->SetLongArrayRegion(env, result, 0, 1, &tp.tv_sec);
-    (*env)->SetLongArrayRegion(env, result, 1, 1, &tp.tv_nsec);
-
-    return result;
+   
+    return (tp.tv_sec << 32) | (tp.tv_nsec);
 }
 
 #ifdef WIN
 void unix_time(struct timespec *spec)
 {
-	__int64 wintime;
-	GetSystemTimeAsFileTime((FILETIME*)&wintime);
-	wintime -= w2ux;
-	spec->tv_sec = wintime / exp7;
-	spec->tv_nsec = wintime % exp7 * 100;
+    __int64 wintime;
+    GetSystemTimeAsFileTime((FILETIME*)&wintime);
+    wintime -= w2ux;
+    spec->tv_sec = wintime / exp7;
+    spec->tv_nsec = wintime % exp7 * 100;
 }
 
-clock_gettime(clockid_t clk_id, struct timespec *tp)
+int clock_gettime(clockid_t clk_id, struct timespec *tp)
 {
 #define exp9         1000000000i64     //1E+9
-	static  struct timespec startspec;
-	static double ticks2nano;
-	static __int64 startticks, tps = 0;
-	__int64 tmp, curticks;
-	QueryPerformanceFrequency((LARGE_INTEGER*)&tmp); //some strange system can
-	if (tps != tmp) {
-		tps = tmp; //init ~~ONCE         //possibly change freq ?
-		QueryPerformanceCounter((LARGE_INTEGER*)&startticks);
-		unix_time(&startspec); ticks2nano = (double)exp9 / tps;
-	}
+    static  struct timespec startspec;
+    static double ticks2nano;
+    static __int64 startticks, tps = 0;
+    __int64 tmp, curticks;
+    QueryPerformanceFrequency((LARGE_INTEGER*)&tmp); //some strange system can
+    if (tps != tmp) {
+        tps = tmp; //init ~~ONCE         //possibly change freq ?
+        QueryPerformanceCounter((LARGE_INTEGER*)&startticks);
+        unix_time(&startspec); ticks2nano = (double)exp9 / tps;
+    }
 
-	QueryPerformanceCounter((LARGE_INTEGER*)&curticks);
-	curticks -= startticks;
-	tp->tv_sec = startspec.tv_sec + (curticks / tps);
-	tp->tv_nsec = startspec.tv_nsec + (double)(curticks % tps) * ticks2nano;
-	if (!(tp->tv_nsec < exp9)) { tp->tv_sec++; tp->tv_nsec -= exp9; }
-	return 0;
+    QueryPerformanceCounter((LARGE_INTEGER*)&curticks);
+    curticks -= startticks;
+    tp->tv_sec = startspec.tv_sec + (curticks / tps);
+    tp->tv_nsec = startspec.tv_nsec + (double)(curticks % tps) * ticks2nano;
+    if (!(tp->tv_nsec < exp9)) { tp->tv_sec++; tp->tv_nsec -= exp9; }
+    return 0;
 }
 #endif

@@ -26,7 +26,7 @@ public class NanoClock extends Clock {
         try (InputStream is = NanoClock.class.getResourceAsStream(String.format("/native/%s%s", nativeLibrary, extension));
              OutputStream os = new FileOutputStream(temp)) {
             if (is == null) {
-                throw new FileNotFoundException(String.format("Executable file 'native/caplin_time%s' was not found inside JAR.", extension));
+                throw new FileNotFoundException(String.format("Executable file 'native/nanotime%s' was not found inside JAR.", extension));
             }
 
             byte[] buffer = new byte[1024];
@@ -56,7 +56,7 @@ public class NanoClock extends Clock {
         this.zone = zone;
     }
 
-    public native long[] clock_gettime();
+    public native long clock_gettime();
 
     @Override
     public ZoneId getZone() {
@@ -73,8 +73,8 @@ public class NanoClock extends Clock {
 
     @Override
     public Instant instant() {
-        long[] time = clock_gettime();
-        return Instant.ofEpochSecond(time[0], time[1]);
+        long time = clock_gettime();
+        return Instant.ofEpochSecond( time >> 32, time & 0xFFFFFFFFL);
     }
 
     @Override
