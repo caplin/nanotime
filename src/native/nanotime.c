@@ -1,6 +1,6 @@
 #include <jni.h>
 #include <time.h>
-#include "nano_time.h"
+#include "nanotime.h"
 
 #ifdef WIN
 #include <Windows.h>

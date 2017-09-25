@@ -13,20 +13,32 @@ tasks.printVersion.execute()
 defaultTasks 'printVersion'
 
 repositories {
-   maven { url "http://artifactory.caplin.com/artifactory/repo1/" }
+    maven { url "http://artifactory.caplin.com/artifactory/repo1/" }
+    maven { url "http://artifactory.caplin.com/artifactory/caplin-ci/" }
+}
+
+configurations {
+    distributables
 }
 
 dependencies {
    testCompile group: 'junit', name: 'junit', version: '4.12'
+
+   distributables group: 'com.caplin.platform.components.codelibrary', name: 'nanotime', version: version, ext: 'dll'
+   distributables group: 'com.caplin.platform.components.codelibrary', name: 'nanotime', version: version, ext: 'dylib'
+   distributables group: 'com.caplin.platform.components.codelibrary', name: 'nanotime', version: version, ext: 'so'
 }
 
+// Set up platform specific configuration
 project.ext {
     jdkDir = System.getenv().JAVA_HOME
-    
+
+    distributableName = 'libnanotime'
     if (OperatingSystem.current().isWindows()) {
         headersDir = 'win32'
         extension = 'dll'
         platformClassifier = 'win64'
+        distributableName = 'nanotime'
     } else if (OperatingSystem.current().isLinux()) {
         headersDir = 'linux'
         extension = 'so'
@@ -38,6 +50,7 @@ project.ext {
     }
 }
 
+// Build the c distributable
 model {
     platforms {
         x64 {
@@ -52,7 +65,7 @@ model {
         }
     }
     components {
-        nano_time(NativeLibrarySpec) {
+        nanotime(NativeLibrarySpec) {
             targetPlatform "x64"
             sources {
                 c {
@@ -70,8 +83,8 @@ model {
     }
 }
 
-def nativeLibPath = "build/libs/nano_time/shared"
-
+// Create a jar with the distributable for this platform
+def nativeLibPath = "build/libs/nanotime/shared"
 jar {
     into('native') {
         from nativeLibPath
@@ -79,29 +92,56 @@ jar {
         include '*.so'
         include '*.dylib'
         rename { String fileName ->
-            fileName.replace("libnano_time", "nano_time")
+            fileName.replace("libnanotime", "nanotime")
         }
     }
     classifier = platformClassifier
 }
-jar.dependsOn tasks.matching { it.name.startsWith("nano_time") }
+jar.dependsOn tasks.matching { it.name.startsWith("nanotime") }
 
-task createTestNativeDependenciesDirectory(type: Copy) {
+// Create a jar with the distributables from all platforms
+task buildAllPlatformsJar(type: Jar) {
+    from sourceSets.main.output
+    into('native') {
+        from configurations.distributables
+        rename { String fileName -> "nanotime." + fileName.tokenize('.').last() }
+    }
+}
+
+// Copy the distributable to the resources/native directory in order to test it
+task createTestNativeDependenciesDirectory(type: Copy, dependsOn: tasks.matching { it.name.startsWith("nanotime") }) {
     from nativeLibPath
     into 'build/resources/test/native'
     include '*.dll'
     include '*.so'
     include '*.dylib'
     rename { String fileName ->
-        fileName.replace("libnano_time", "nano_time")
+        fileName.replace("libnanotime", "nanotime")
     }
 }
 test.dependsOn createTestNativeDependenciesDirectory
 
 publishing {
     publications {
-        mavenJava(MavenPublication) {
-            from components.java
+        // Publish the distributable for this platform
+        distributable(MavenPublication) {
+            artifactId 'nanotime'
+            artifact file("$nativeLibPath/$distributableName.$extension")
+        }
+
+        // Publish the Jar with the distributables for all platforms
+        allPlatformsJar(MavenPublication) {
+            artifact tasks.buildAllPlatformsJar
+        }
+    }
+}
+
+afterEvaluate {
+    tasks.withType(PublishToMavenRepository).all { publishTask ->
+        // Make publishing the distributable dependent upon building the distributable
+        publishTask.dependsOn { task ->
+            if (task.name.contains('Distributable'))
+                'test'
         }
     }
 }
@@ -113,3 +153,4 @@ publishing {
         }
     }
 }
+

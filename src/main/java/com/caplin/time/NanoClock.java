@@ -8,9 +8,9 @@ import java.time.ZoneId;
 public class NanoClock extends Clock {
     static {
         try {
-            loadNativeLibraryFromJar("nano_time");
+            loadNativeLibraryFromJar("nanotime");
         } catch (IOException ioe) {
-            throw new RuntimeException("Unable to load caplin_time library", ioe);
+            throw new RuntimeException("Unable to load nanotime distributable", ioe);
         }
     }
 
