@@ -1,3 +1,6 @@
+plugins {
+    id "me.champeau.gradle.jmh" version "0.4.4"
+}
 import org.gradle.internal.os.OperatingSystem;
 
 apply from: 'version.gradle'
@@ -98,6 +101,22 @@ jar {
     classifier = platformClassifier
 }
 jar.dependsOn tasks.matching { it.name.startsWith("nanotime") }
+
+jmh {
+    timeUnit = 'ns'
+}
+jmhJar {
+    into('native') {
+        from nativeLibPath
+        include '*.dll'
+        include '*.so'
+        include '*.dylib'
+        rename { String fileName ->
+            fileName.replace("libnanotime", "nanotime")
+        }
+    }
+}
+jmhJar.dependsOn tasks.matching { it.name.startsWith("nanotime") }
 
 // Create a jar with the distributables from all platforms
 task buildAllPlatformsJar(type: Jar) {
