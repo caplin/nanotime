@@ -1,9 +1,11 @@
 package com.caplin.time;
 
 import java.io.*;
+import java.time.Clock;
 import java.time.Instant;
+import java.time.ZoneId;
 
-public class NanoClock {
+public class NanoClock extends Clock {
     static {
         try {
             loadNativeLibraryFromJar("nano_time");
@@ -44,10 +46,52 @@ public class NanoClock {
         }
     }
 
+    private final ZoneId zone;
+
+    NanoClock() {
+        this.zone = ZoneId.systemDefault();
+    }
+
+    NanoClock(ZoneId zone) {
+        this.zone = zone;
+    }
+
     public native long[] clock_gettime();
 
+    @Override
+    public ZoneId getZone() {
+        return zone;
+    }
+
+    @Override
+    public Clock withZone(ZoneId zone) {
+        if (this.zone.equals(zone)) {
+            return this;
+        }
+        return new NanoClock(zone);
+    }
+
+    @Override
     public Instant instant() {
         long[] time = clock_gettime();
         return Instant.ofEpochSecond(time[0], time[1]);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof NanoClock) {
+            return zone.equals(((NanoClock) obj).zone);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return zone.hashCode() + 1;
+    }
+
+    @Override
+    public String toString() {
+        return "NanoClock[" + zone + "]";
     }
 }
