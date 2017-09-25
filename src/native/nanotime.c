@@ -1,3 +1,6 @@
+/*
+ * Copyright 1995-2017 Caplin Systems Ltd
+ */
 #include <jni.h>
 #include <time.h>
 #include "nanotime.h"
@@ -8,7 +11,7 @@
 typedef int clockid_t;
 
 #define CLOCK_REALTIME 0
-#define exp7           10000000i64     //1E+7     //C-file part
+#define exp7           10000000i64     //1E+7
 #define exp9         1000000000i64     //1E+9
 #define w2ux 116444736000000000i64     //1.jan1601 to 1.jan1970
 
@@ -19,10 +22,14 @@ JNIEXPORT jlong JNICALL Java_com_caplin_time_NanoClock_clock_1gettime(JNIEnv *en
     struct timespec tp;
     
     clock_gettime(CLOCK_REALTIME, &tp);
-   
+
+    // Using bitwise here to improve performance so we just need to return a 64 bit long.
+    // 32 bits for seconds since epoch, and 32 bits for nanoseconds.
+    // This will only work up until 2038!
     return (tp.tv_sec << 32) | (tp.tv_nsec);
 }
 
+// Any changes should also be made to //CDev/main/datasrc/compat_win32.c
 #ifdef WIN
 void unix_time(struct timespec *spec)
 {
@@ -35,14 +42,13 @@ void unix_time(struct timespec *spec)
 
 int clock_gettime(clockid_t clk_id, struct timespec *tp)
 {
-#define exp9         1000000000i64     //1E+9
     static  struct timespec startspec;
     static double ticks2nano;
     static __int64 startticks, tps = 0;
     __int64 tmp, curticks;
-    QueryPerformanceFrequency((LARGE_INTEGER*)&tmp); //some strange system can
+    QueryPerformanceFrequency((LARGE_INTEGER*)&tmp);
     if (tps != tmp) {
-        tps = tmp; //init ~~ONCE         //possibly change freq ?
+        tps = tmp;
         QueryPerformanceCounter((LARGE_INTEGER*)&startticks);
         unix_time(&startspec); ticks2nano = (double)exp9 / tps;
     }

@@ -100,6 +100,7 @@ jar {
 }
 jar.dependsOn tasks.matching { it.name.startsWith("nanotime") }
 
+// Configure the jmh harness.
 jmh {
     timeUnit = 'ns'
 }

@@ -1,12 +1,10 @@
+/*
+ * Copyright 2017 Caplin Systems Ltd
+ */
 package com.caplin.time;
 
-import org.openjdk.jmh.runner.Runner;
-import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.annotations.*;
-import org.openjdk.jmh.runner.RunnerException;
-import org.openjdk.jmh.runner.options.OptionsBuilder;
 
-import java.io.IOException;
 import java.time.Clock;
 import java.time.Instant;
 
@@ -21,17 +19,17 @@ public class NanoClockBenchmark {
         systemClock = Clock.systemDefaultZone();
     }
 
-    @Benchmark @BenchmarkMode(Mode.SampleTime)
-    public long measureGetSystemCurrentCurrentTime(){
+    @Benchmark @BenchmarkMode(Mode.AverageTime)
+    public long measureGetSystemCurrentTime(){
         return System.currentTimeMillis();
     }
 
-    @Benchmark @BenchmarkMode(Mode.SampleTime)
+    @Benchmark @BenchmarkMode(Mode.AverageTime)
     public Instant measureGetSystemClockTime(){
         return systemClock.instant();
     }
 
-    @Benchmark @BenchmarkMode(Mode.SampleTime)
+    @Benchmark @BenchmarkMode(Mode.AverageTime)
     public Instant measureGetNanoClockTime(){
         return nanoClock.instant();
     }
