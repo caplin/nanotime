@@ -14,7 +14,7 @@ tasks.printVersion.execute()
 defaultTasks 'printVersion'
 
 repositories {
-    maven { url "http://artifactory.caplin.com/artifactory/repo1/" }
+    mavenCentral()
     maven { url "http://artifactory.caplin.com/artifactory/caplin-ci/" }
 }
 
