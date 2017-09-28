@@ -63,6 +63,9 @@ model {
             if (toolChain in VisualCpp) {
                 cCompiler.define "WIN"
             }
+            if (toolChain in Gcc) {
+                linker.args "-lrt"
+            }
         }
     }
     components {
