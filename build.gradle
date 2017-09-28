@@ -4,7 +4,7 @@ plugins {
 import org.gradle.internal.os.OperatingSystem;
 
 apply from: 'version.gradle'
-apply from: 'http://artifactory.caplin.com/caplin-releng/com/caplin/gradle/plugins/caplin-version/1.1.0/caplin-version-1.1.0.gradle'
+apply from: 'caplin-version-1.2.0.gradle'
 
 apply plugin: 'java'
 apply plugin: 'c'

@@ -1,0 +1,173 @@
+// VARIABLES
+
+// HASH_LENGTH sets the number of characters in the hash on the end of the version number
+Integer HASH_LENGTH = 7
+// DEFAULT_CHANGELIST sets the build number suffix for non-CI builds
+String DEFAULT_CHANGELIST = "dev"
+// BRANCH_METHOD defines the method for finding the git branch name
+// Available options are 'env' and 'cmd'
+String BRANCH_METHOD = "env"
+
+// MAIN
+// Please be careful editing anything underneath here as this could have serious consequences on ALL BUILDS
+def is_ci = (System.getenv('BUILD_NUMBER') != null)
+def perforce_changelist = System.getenv('P4_CHANGELIST')
+
+/*
+ * Standarises the way we find the branch name
+ */
+String getBranchName(String branch_method) {
+    switch(branch_method) {
+        case 'cmd':
+            return getBranchNameByCmd()
+            break
+        default:
+            return getBranchNameByEnv()
+            break
+    }
+}
+
+/*
+ * Gets the hash name
+ */
+String getHash(Integer hash_length) {
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'rev-parse', "--short=${hash_length}", 'HEAD'
+        standardOutput = stdout
+    }
+    return stdout.toString().trim()
+}
+
+/*
+ * Gets the total number of commits
+ */
+Integer getNumberOfCommits() {
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'rev-list', 'HEAD'
+        standardOutput = stdout
+    }
+    int commitsNumber = 0
+    stdout.toString().eachLine { commitsNumber++ }
+
+    return commitsNumber
+}
+
+/*
+ * Gets branch name based on git branch
+ */
+String getBranchNameByCmd() {
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'branch'
+        standardOutput = stdout
+    }
+    stdout.toString().eachLine {
+        if (it.startsWith("*")) {
+            return it.toLowerCase().replaceFirst("^\\* ", "")
+        }
+    }
+}
+
+/*
+ * Gets branch name based on GIT_BRANCH_ENV_NAME
+ */
+String getBranchNameByEnv() {
+    return System.getenv('GIT_BRANCH').replaceFirst('origin/', '')
+}
+
+String getPrId() {
+    return "-PR" + System.getenv('pullRequestId')
+}
+
+/*
+ * Gets branch name based on GIT_BRANCH_ENV_NAME
+ */
+String getShortBranchName(branch_method) {
+    def gitBranchName = getBranchName(branch_method)
+    if (gitBranchName != null) {
+        gitBranchName = gitBranchName.replaceFirst("^\\* ", "")
+        def prefix = gitBranchName.replaceFirst(~/[^\/]+$/, '')
+        gitBranchName = gitBranchName.replaceFirst(prefix, '')
+    }
+    return gitBranchName
+}
+
+/*
+ * Works out if the branch is the Master branch
+ */
+boolean isMaster(branch_method) {
+    def isMaster = false
+    def gitBranchName = getBranchName(branch_method)
+    if (gitBranchName != null) {
+        if (gitBranchName.toLowerCase() == 'master') {
+            isMaster = true
+        }
+    }
+    return isMaster
+}
+
+/*
+ * Works out if the branch is a Support branch
+ */
+boolean isSupport(branch_method) {
+    def isSupport = false
+    def gitBranchName = getBranchName(branch_method)
+    if (gitBranchName != null) {
+        if (gitBranchName.toLowerCase().startsWith('support/') || gitBranchName.toLowerCase().startsWith('support-')) {
+            isSupport = true
+        }
+    }
+    return isSupport
+}
+
+/*
+ * Works out if the branch is a Release branch
+ */
+boolean isRelease(branch_method) {
+    def isRelease = false
+    def gitBranchName = getBranchName(branch_method)
+    if (gitBranchName != null) {
+        if (gitBranchName.toLowerCase().startsWith('release/') || gitBranchName.toLowerCase().startsWith('release-')) {
+            isRelease = true
+        }
+    }
+    return isRelease
+}
+
+def CHANGELIST = DEFAULT_CHANGELIST
+if (is_ci) {
+    if (perforce_changelist != null) {
+        CHANGELIST = perforce_changelist
+    } else {
+        def featureBranchName = !isMaster(BRANCH_METHOD) && !isRelease(BRANCH_METHOD) && !isSupport(BRANCH_METHOD) && getShortBranchName() != null ? "-${getShortBranchName()}" : ""
+        if (System.getenv('pullRequestId')) {
+            featureBranchName = getPrId()
+        }
+        CHANGELIST = "${getNumberOfCommits()}-${getHash(HASH_LENGTH)}${featureBranchName}"
+    }
+}
+
+String VERSION = "${ext.major}.${ext.minor}.${ext.patch}"
+String FULL_VERSION = "${VERSION}-${CHANGELIST}"
+
+allprojects {
+    version = FULL_VERSION
+}
+
+// Task for printing out the version during builds
+task printVersion {
+    doLast {
+        println "*************************************"
+        println "VERSION=${FULL_VERSION}"
+        println "*************************************"
+    }
+}
+
+// Task for Jenkins to find the version quickly
+task printCIVersion {
+    doLast {
+        println "version=${FULL_VERSION}"
+    }
+}

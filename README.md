@@ -6,7 +6,26 @@ To build the project, run:
 ```
 ./gradlew clean build
 ```
-This will build a the C distributable for your platform, and package it up in the jar.
+This will build the C distributable for your platform, and package it up in the jar.
+
+To amalgamate distributables for all supported platforms (Linux, Windows and Mac), run:
+```
+buildAllPlatformsJar
+```
+Note that this will only work within the Caplin domain.
+
+## Publishing
+This is a two stage build process. Note that publishing and downloading the platform specific distributables is only available within the Caplin domain.
+
+The first stage is to build the distributable for each supported platform, and publish them to the Caplin artifactory:
+```
+./gradlew clean publishDistributablePublicationToMavenRepository
+```
+
+The second stage is to amalgamate the distributables within a jar, and publish the jar:
+```
+./gradlew clean publishAllPlatformsJarPublicationToMavenRepository
+```
 
 ## Usage
 ```
