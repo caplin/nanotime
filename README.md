@@ -1,5 +1,13 @@
 # Caplin nanotime library
-JNI library for nanosecond accuracy timestamps in Java 8.
+JNI library for nanosecond precision timestamps in Java 8.
+
+## Supported Platforms
+Nanosecond precision timestamps are supported by the following operating systems:
+* Red Hat Enterprise Linux 6
+* Red Hat Enterprise Linux 7
+* Windows 7
+* Windows 10
+* Apple macOS 10.12 (Sierra) and higher
 
 ## Building the project
 To build the project, run:
