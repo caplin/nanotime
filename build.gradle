@@ -1,5 +1,6 @@
 plugins {
     id "me.champeau.gradle.jmh" version "0.4.4"
+    id "com.github.breadmoirai.github-release" version "1.0.9"
 }
 import org.gradle.internal.os.OperatingSystem;
 
@@ -20,14 +21,17 @@ repositories {
 
 configurations {
     distributables
+    github
 }
 
 dependencies {
-   testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile group: 'junit', name: 'junit', version: '4.12'
 
-   distributables group: 'com.caplin.platform.components.codelibrary', name: 'nanotime', version: version, ext: 'dll'
-   distributables group: 'com.caplin.platform.components.codelibrary', name: 'nanotime', version: version, ext: 'dylib'
-   distributables group: 'com.caplin.platform.components.codelibrary', name: 'nanotime', version: version, ext: 'so'
+    distributables group: 'com.caplin.platform.components.codelibrary', name: 'nanotime', version: version, ext: 'dll'
+    distributables group: 'com.caplin.platform.components.codelibrary', name: 'nanotime', version: version, ext: 'dylib'
+    distributables group: 'com.caplin.platform.components.codelibrary', name: 'nanotime', version: version, ext: 'so'
+
+    github group: 'com.caplin.platform.components.codelibrary', name: 'nanotime', version: version, ext: 'jar'
 }
 
 // Set up platform specific configuration
@@ -177,3 +181,26 @@ publishing {
     }
 }
 
+task gatherArtifact(type: Copy){
+    from configurations.github
+    into buildDir
+}
+
+githubRelease {
+
+    if (!project.hasProperty("githubToken")) {
+        project.ext.set('githubToken', '')
+    }
+
+    token = project.githubToken
+    repo = "nanotime"
+    owner = "caplin"
+    tagName = "${project.version}"
+    targetCommitish = "master"
+    body = "Caplin Nanotime version ${version}"
+    draft = true
+    prerelease = false
+    releaseAssets = fileTree('build/'){
+        include "nanotime-${version}.jar"
+    }
+}
