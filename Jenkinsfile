@@ -7,6 +7,9 @@ pipeline {
                     agent {
                         label 'build && java8 && windows10 && msbuild'
                     }
+                    parameters {
+                            string(name: 'version', defaultValue: '1.0.0-JENKINSFILETEST', description: '')
+                        }
                     steps {
                         checkout scm
                         bat  'gradlew.bat clean publishDistributablePublicationToMavenRepository'
@@ -16,6 +19,9 @@ pipeline {
                     agent {
                         label 'build && java8 && centos6'
                     }
+                    parameters {
+                                 string(name: 'version', defaultValue: '1.0.0-JENKINSFILETEST', description: '')
+                                }
                     steps {
                         checkout scm
                         sh  './gradlew clean publishDistributablePublicationToMavenRepository'
@@ -26,6 +32,9 @@ pipeline {
                       agent {
                            label 'build && java8 && osx-10.12'
                              }
+                             parameters {
+                                         string(name: 'version', defaultValue: '1.0.0-JENKINSFILETEST', description: '')
+                                        }
                              steps {
                                     checkout scm
                                     sh  './gradlew clean publishDistributablePublicationToMavenRepository'
@@ -36,10 +45,14 @@ pipeline {
         }
         stage('Build Jar') {
             agent {
-                label 'build && java8 && windows7 && chrome '
+                label 'build && java8 && centos6'
         }
+        parameters {
+                    string(name: 'version', defaultValue: '1.0.0-JENKINSFILETEST', description: '')
+                    }
         steps {
             checkout scm
+            bat 'gradlew.bat clean publishAllPlatformsJarPublicationToMavenRepository'
         }
         }
     }
