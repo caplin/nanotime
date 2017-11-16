@@ -2,9 +2,21 @@ pipeline {
     agent none
 
     parameters {
-                string(name: 'version', defaultValue: '1.0.0-JENKINSFILETEST', description: '')
+                string(name: 'version', defaultValue: ${VERSION}, description: '')
                 }
     stages {
+
+        stage ('Get Version') {
+            agent {
+                   label 'build && java8 && centos6'
+                   }
+                   steps {
+                           checkout scm
+                             sh  'export VERSION  | ./gradlew | grep VERSION | sed "s/VERSION/version/"'
+                         }
+        }
+
+
         stage('Build Distributables') {
             parallel {
                 stage('Build Windows') {
@@ -22,7 +34,7 @@ pipeline {
                     }
                     steps {
                         checkout scm
-                        sh  './gradlew clean publishDistributablePublicationToMavenRepository'
+                        sh  './gradlew clean publishDistributablePublicationToMavenRepository -Pversion=${params.version}'
 
                     }
                 }
@@ -32,7 +44,7 @@ pipeline {
                              }
                              steps {
                                     checkout scm
-                                    sh  './gradlew clean publishDistributablePublicationToMavenRepository'
+                                    sh  './gradlew clean publishDistributablePublicationToMavenRepository -Pversion=${params.version}'
                                     }
                                 }
 
