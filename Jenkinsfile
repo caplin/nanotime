@@ -2,7 +2,7 @@ pipeline {
     agent none
 
     parameters {
-                string(name: 'version', defaultValue: '${VERSION}', description: '')
+                string(name: 'version', defaultValue: "${VERSION}", description: '')
                 }
     stages {
 
@@ -13,7 +13,7 @@ pipeline {
                    steps {
                            checkout scm
                              sh  'export VERSION  | ./gradlew --info | grep VERSION | sed "s/VERSION/version/"'
-                             sh 'echo ${params.version}'
+                             sh "echo ${params.version}""
                          }
         }
 
