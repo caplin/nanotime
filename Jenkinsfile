@@ -46,7 +46,7 @@ pipeline {
         steps {
             checkout scm
             sh '''export VERSION=$(./gradlew | grep VERSION | sed "s/VERSION/version/")
-                  ./gradlew clean publishDistributablePublicationToMavenRepository -Pversion=${VERSION}'''
+                  ./gradlew clean publishAllPlatformsJarPublicationToMavenRepository -Pversion=${VERSION}'''
         }
         }
     }
