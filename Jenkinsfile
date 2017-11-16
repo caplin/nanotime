@@ -2,7 +2,7 @@ pipeline {
     agent none
 
     parameters {
-                string(name: 'version', defaultValue: ${VERSION}, description: '')
+                string(name: 'version', defaultValue: '${VERSION}', description: '')
                 }
     stages {
 
