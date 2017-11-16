@@ -13,7 +13,7 @@ pipeline {
                    steps {
                            checkout scm
                              sh  'export VERSION  | ./gradlew --info | grep VERSION | sed "s/VERSION/version/"'
-                             sh "echo ${params.version}"
+                             sh "echo ${VERSION}"
                          }
         }
 
@@ -26,7 +26,7 @@ pipeline {
                     }
                     steps {
                         checkout scm
-                        bat  "gradlew.bat clean publishDistributablePublicationToMavenRepository -Pversion=${params.version}"
+                        bat  "gradlew.bat clean publishDistributablePublicationToMavenRepository -Pversion=${version}"
                 }
                 }
                 stage('Build Linux') {
@@ -35,8 +35,8 @@ pipeline {
                     }
                     steps {
                         checkout scm
-                        sh "echo ${params.version}"
-                        sh  './gradlew clean publishDistributablePublicationToMavenRepository -Pversion=${params.version}'
+                        sh "echo the version is ${version}"
+                        sh  './gradlew clean publishDistributablePublicationToMavenRepository -Pversion=${version}'
 
                     }
                 }
@@ -46,7 +46,7 @@ pipeline {
                              }
                              steps {
                                     checkout scm
-                                    sh  './gradlew clean publishDistributablePublicationToMavenRepository -Pversion=${params.version}'
+                                    sh  './gradlew clean publishDistributablePublicationToMavenRepository -Pversion=${version}'
                                     }
                                 }
 
