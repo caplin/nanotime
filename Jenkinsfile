@@ -18,17 +18,17 @@ pipeline {
                     }
                     steps {
                         checkout scm
-                        sh  'gradlew clean publishDistributablePublicationToMavenRepository'
+                        sh  './gradlew clean publishDistributablePublicationToMavenRepository'
 
                     }
                 }
                 stage('Build Darwin') {
-                                    agent {
-                                        label 'build && java8 && osx-10.12'
-                                    }
-                                    steps {
-                                        checkout scm
-                                        sh  'gradlew clean publishDistributablePublicationToMavenRepository'
+                      agent {
+                           label 'build && java8 && osx-10.12'
+                             }
+                             steps {
+                                    checkout scm
+                                    sh  './gradlew clean publishDistributablePublicationToMavenRepository'
                                     }
                                 }
 
