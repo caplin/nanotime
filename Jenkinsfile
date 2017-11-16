@@ -13,7 +13,7 @@ pipeline {
                     }
                     steps {
                         checkout scm
-                        bat  'gradlew.bat clean publishDistributablePublicationToMavenRepository -Pversion= ${params.version}'
+                        bat  "gradlew.bat clean publishDistributablePublicationToMavenRepository -Pversion=${params.version}"
                 }
                 }
                 stage('Build Linux') {
