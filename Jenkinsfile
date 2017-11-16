@@ -13,6 +13,7 @@ pipeline {
                    steps {
                            checkout scm
                              sh  'export VERSION  | ./gradlew --info | grep VERSION | sed "s/VERSION/version/"'
+                             sh 'echo ${params.version}'
                          }
         }
 
