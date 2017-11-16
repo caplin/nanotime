@@ -35,7 +35,7 @@ pipeline {
                     }
                     steps {
                         checkout scm
-                        sh 'echo ${params.version}'
+                        sh "echo ${params.version}"
                         sh  './gradlew clean publishDistributablePublicationToMavenRepository -Pversion=${params.version}'
 
                     }
