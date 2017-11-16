@@ -22,7 +22,7 @@ pipeline {
 
                     }
                 }
-                stage('Build Darwin) {
+                stage('Build Darwin') {
                                     agent {
                                         label 'build && java8 && osx-10.12'
                                     }
@@ -32,6 +32,7 @@ pipeline {
                                     }
                                 }
 
+        }
         }
         stage('Build Jar') {
             agent {
