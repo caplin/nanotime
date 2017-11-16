@@ -5,19 +5,6 @@ pipeline {
                 string(name: 'version', defaultValue: "${VERSION}", description: '')
                 }
     stages {
-
-        stage ('Get Version') {
-            agent {
-                   label 'build && java8 && centos6'
-                   }
-                   steps {
-                           checkout scm
-                             sh  'export VERSION  | ./gradlew --info | grep VERSION | sed "s/VERSION/version/"'
-                             sh "echo ${VERSION}"
-                         }
-        }
-
-
         stage('Build Distributables') {
             parallel {
                 stage('Build Windows') {
@@ -35,9 +22,8 @@ pipeline {
                     }
                     steps {
                         checkout scm
-                        sh "echo the version is ${version}"
-                        sh  './gradlew clean publishDistributablePublicationToMavenRepository -Pversion=${version}'
-
+                        sh ```export VERSION=$(./gradlew | grep VERSION | sed "s/VERSION/version/")
+                              ./gradlew clean publishDistributablePublicationToMavenRepository -Pversion=${VERSION}```
                     }
                 }
                 stage('Build Darwin') {
@@ -46,7 +32,8 @@ pipeline {
                              }
                              steps {
                                     checkout scm
-                                    sh  './gradlew clean publishDistributablePublicationToMavenRepository -Pversion=${version}'
+                                    sh ```export VERSION=$(./gradlew | grep VERSION | sed "s/VERSION/version/")
+                                          ./gradlew clean publishDistributablePublicationToMavenRepository -Pversion=${VERSION}```
                                     }
                                 }
 
