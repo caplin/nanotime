@@ -45,7 +45,8 @@ pipeline {
         }
         steps {
             checkout scm
-            bat 'gradlew.bat clean publishAllPlatformsJarPublicationToMavenRepository'
+            sh '''export VERSION=$(./gradlew | grep VERSION | sed "s/VERSION/version/")
+                  ./gradlew clean publishDistributablePublicationToMavenRepository -Pversion=${VERSION}'''
         }
         }
     }
