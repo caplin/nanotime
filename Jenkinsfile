@@ -11,6 +11,7 @@ pipeline {
                         checkout scm
                         bat  'gradlew.bat clean publishDistributablePublicationToMavenRepository'
                 }
+                }
                 stage('Build Linux') {
                     agent {
                         label 'build && java8 && centos6'
@@ -30,7 +31,7 @@ pipeline {
                                         sh  'gradlew clean publishDistributablePublicationToMavenRepository'
                                     }
                                 }
-            }
+
         }
         stage('Build Jar') {
             agent {
