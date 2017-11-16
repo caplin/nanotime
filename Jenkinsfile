@@ -1,5 +1,9 @@
 pipeline {
     agent none
+
+    parameters {
+                string(name: 'version', defaultValue: '1.0.0-JENKINSFILETEST', description: '')
+                }
     stages {
         stage('Build Distributables') {
             parallel {
@@ -7,21 +11,15 @@ pipeline {
                     agent {
                         label 'build && java8 && windows10 && msbuild'
                     }
-                    parameters {
-                            string(name: 'version', defaultValue: '1.0.0-JENKINSFILETEST', description: '')
-                        }
                     steps {
                         checkout scm
-                        bat  'gradlew.bat clean publishDistributablePublicationToMavenRepository'
+                        bat  'gradlew.bat clean publishDistributablePublicationToMavenRepository -Pversion= ${params.version}'
                 }
                 }
                 stage('Build Linux') {
                     agent {
                         label 'build && java8 && centos6'
                     }
-                    parameters {
-                                 string(name: 'version', defaultValue: '1.0.0-JENKINSFILETEST', description: '')
-                                }
                     steps {
                         checkout scm
                         sh  './gradlew clean publishDistributablePublicationToMavenRepository'
@@ -32,9 +30,6 @@ pipeline {
                       agent {
                            label 'build && java8 && osx-10.12'
                              }
-                             parameters {
-                                         string(name: 'version', defaultValue: '1.0.0-JENKINSFILETEST', description: '')
-                                        }
                              steps {
                                     checkout scm
                                     sh  './gradlew clean publishDistributablePublicationToMavenRepository'
@@ -47,9 +42,6 @@ pipeline {
             agent {
                 label 'build && java8 && centos6'
         }
-        parameters {
-                    string(name: 'version', defaultValue: '1.0.0-JENKINSFILETEST', description: '')
-                    }
         steps {
             checkout scm
             bat 'gradlew.bat clean publishAllPlatformsJarPublicationToMavenRepository'
