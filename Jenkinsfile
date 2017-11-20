@@ -1,8 +1,7 @@
 #!groovy​
 
-pipeline {
+node {
     agent none
-
     parameters {
                 string(name: 'version', defaultValue: "${VERSION}", description: '')
                 }
@@ -51,13 +50,6 @@ pipeline {
                   ./gradlew clean publishAllPlatformsJarPublicationToMavenRepository -Pversion=${VERSION}'''
         }
         }
-        node{
-        stage("Promote to RC")
 
-
-            git branch:'master', url:'https://stash.caplin.com/scm/releng/promotionscripts.git'
-            sh '''echo gitcheckouted stuff
-                '''
-            }
         }
     }
