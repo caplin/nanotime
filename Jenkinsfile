@@ -63,7 +63,6 @@ pipeline {
             sh '''
                 export VERSION=$(./gradlew | grep VERSION | sed "s/VERSION/version/")
                       ./gradlew clean PromoteToCaplinRC -Pversion=${VERSION}'''
-                '''
             }
         }
     }
