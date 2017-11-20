@@ -1,10 +1,7 @@
 #!groovy​
 
 node {
-    parameters {
-                string(name: 'version', defaultValue: "${VERSION}", description: '')
 
-                }
 
        stage('Build Distributables') {
             parallel {
