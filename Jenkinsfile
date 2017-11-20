@@ -1,9 +1,6 @@
 #!groovy​
 
 node {
-    agent {
-        label 'jenkins-cent5-009.caplin.com'
-    }
     parameters {
                 string(name: 'version', defaultValue: "${VERSION}", description: '')
                 }
