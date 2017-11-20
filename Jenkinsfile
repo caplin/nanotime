@@ -54,6 +54,7 @@ pipeline {
             steps {
             sh '''
                 echo gitcheckouted stuff
+                ```
             }
 
         }
