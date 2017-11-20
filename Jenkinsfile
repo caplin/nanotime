@@ -3,52 +3,40 @@
 node {
     parameters {
                 string(name: 'version', defaultValue: "${VERSION}", description: '')
+
                 }
-    stages {
-        stage('Build Distributables') {
+
+       stage('Build Distributables') {
             parallel {
-                stage('Build Windows') {
-                    agent {
-                        label 'build && java8 && windows10 && msbuild && gradle'
-                    }
-                    steps {
+                node('build && java8 && windows10 && msbuild ') {
+
                         checkout scm
                         bat  "gradlew.bat clean publishDistributablePublicationToMavenRepository -Pversion=${version}"
+
                 }
-                }
-                stage('Build Linux') {
-                    agent {
-                        label 'build && java8 && centos6 && gradle'
-                    }
-                    steps {
+                node('build && java8 && centos6 && gradle') {
                         checkout scm
                         sh '''export VERSION=$(./gradlew | grep VERSION | sed "s/VERSION/version/")
                               ./gradlew clean publishDistributablePublicationToMavenRepository -Pversion=${VERSION}'''
-                    }
+
                 }
-                stage('Build Darwin') {
-                      agent {
-                           label 'build && java8 && osx-10.12 && gradle'
-                             }
-                             steps {
+                node('build && java8 && osx-10.12 && gradle) {
                                     checkout scm
                                     sh '''export VERSION=$(./gradlew | grep VERSION | sed "s/VERSION/version/")
                                           ./gradlew clean publishDistributablePublicationToMavenRepository -Pversion=${VERSION}'''
-                                    }
+
                                 }
 
         }
         }
         stage('Build Jar') {
-            agent {
-                label 'build && java8 && centos6'
-        }
-        steps {
+            node('build && java8 && centos6') {
             checkout scm
             sh '''export VERSION=$(./gradlew | grep VERSION | sed "s/VERSION/version/")
                   ./gradlew clean publishAllPlatformsJarPublicationToMavenRepository -Pversion=${VERSION}'''
-        }
-        }
 
         }
+
+
+    }
     }
