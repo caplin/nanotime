@@ -54,7 +54,7 @@ pipeline {
                 label 'jenkins-cent7-004.caplin.com'
             }
             steps {
-            git url: 'https://build.caplin.com/scm/releng/promotionscripts.git'
+            git url: 'https://build@stash.caplin.com/scm/releng/promotionscripts.git'
             sh '''
                 echo gitcheckouted stuff
                 '''
