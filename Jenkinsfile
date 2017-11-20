@@ -20,10 +20,10 @@ node {
                               ./gradlew clean publishDistributablePublicationToMavenRepository -Pversion=${VERSION}'''
 
                 }
-                node('build && java8 && osx-10.12 && gradle) {
-                                    checkout scm
-                                    sh '''export VERSION=$(./gradlew | grep VERSION | sed "s/VERSION/version/")
-                                          ./gradlew clean publishDistributablePublicationToMavenRepository -Pversion=${VERSION}'''
+                node('build && java8 && osx-10.12 && gradle'){
+                         checkout scm
+                          sh '''export VERSION=$(./gradlew | grep VERSION | sed "s/VERSION/version/")
+                                ./gradlew clean publishDistributablePublicationToMavenRepository -Pversion=${VERSION}'''
 
                                 }
 
