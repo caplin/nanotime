@@ -54,7 +54,7 @@ pipeline {
                 label 'jenkins-cent7-004.caplin.com'
             }
             steps {
-            git url: 'https://stash.caplin.com/scm/releng/promotionscripts.git'
+            git credentialsId: '6dee2cf4-5178-42b5-a11c-a7554296c113', url: 'https://stash.caplin.com/scm/releng/promotionscripts.git'
             sh '''
                 echo gitcheckouted stuff
                 '''
