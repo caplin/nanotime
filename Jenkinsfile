@@ -49,5 +49,13 @@ pipeline {
                   ./gradlew clean publishAllPlatformsJarPublicationToMavenRepository -Pversion=${VERSION}'''
         }
         }
+        stage("Promote to RC") {
+        git branch: 'master', url: 'https://stash.caplin.com/scm/releng/promotionscripts.git'
+            steps {
+            sh '''
+                echo gitcheckouted stuff
+            }
+
+        }
     }
 }
