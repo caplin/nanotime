@@ -9,7 +9,7 @@ node {
             parallel {
                 stage('Build Windows') {
                     agent {
-                        label 'build && java8 && windows10 && msbuild'
+                        label 'build && java8 && windows10 && msbuild && gradle'
                     }
                     steps {
                         checkout scm
@@ -18,7 +18,7 @@ node {
                 }
                 stage('Build Linux') {
                     agent {
-                        label 'build && java8 && centos6'
+                        label 'build && java8 && centos6 && gradle'
                     }
                     steps {
                         checkout scm
@@ -28,7 +28,7 @@ node {
                 }
                 stage('Build Darwin') {
                       agent {
-                           label 'build && java8 && osx-10.12'
+                           label 'build && java8 && osx-10.12 && gradle'
                              }
                              steps {
                                     checkout scm
