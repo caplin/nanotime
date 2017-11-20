@@ -54,8 +54,8 @@ pipeline {
                 label 'jenkins-cent7-004.caplin.com'
             }
                 parameters {
-                            string(name: 'REPO', defaultValue: "RC", description: ''),
-                            string(name: 'GROUP', defaultValue: "com.caplin.platform.components.codelibrary.nanotime", description: ''),
+                            string(name: 'REPO', defaultValue: "RC", description: '')
+                            string(name: 'GROUP', defaultValue: "com.caplin.platform.components.codelibrary.nanotime", description: '')
                             string(name: 'BRANCH', defaultValue "", description: '')
                             }
             steps {
