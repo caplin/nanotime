@@ -53,7 +53,9 @@ pipeline {
         }
         stage("Promote to RC") {
             steps {
+                node{
             git branch:'master', url:'https://stash.caplin.com/scm/releng/promotionscripts.git'
+            }
             sh '''echo gitcheckouted stuff
                 '''
             }
