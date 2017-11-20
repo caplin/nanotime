@@ -51,7 +51,7 @@ pipeline {
         }
         stage("Promote to RC") {
             agent {
-                label 'build && linux && gradle'
+                label 'build && linuxl'
             }
             steps {
             git url: 'https://stash.caplin.com/scm/releng/promotionscripts.git'
