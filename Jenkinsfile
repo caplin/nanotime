@@ -54,6 +54,7 @@ pipeline {
             git url: 'https://stash.caplin.com/scm/releng/promotionscripts.git'
             sh '''
                 echo gitcheckouted stuff
+                '''
             }
         }
     }
