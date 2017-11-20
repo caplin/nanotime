@@ -3,6 +3,10 @@ pipeline {
 
     parameters {
                 string(name: 'version', defaultValue: "${VERSION}", description: '')
+                string(name: 'REPO', defaultValue: "RC", description: '')
+                string(name: 'GROUP', defaultValue: "com.caplin.platform.components.codelibrary.nanotime", description: '')
+                string(name: 'BRANCH', defaultValue: "", description: '')
+
                 }
     stages {
         stage('Build Distributables') {
@@ -53,11 +57,7 @@ pipeline {
             agent {
                 label 'jenkins-cent7-004.caplin.com'
             }
-                parameters {
-                            string(name: 'REPO', defaultValue: "RC", description: '')
-                            string(name: 'GROUP', defaultValue: "com.caplin.platform.components.codelibrary.nanotime", description: '')
-                            string(name: 'BRANCH', defaultValue: "", description: '')
-                            }
+
             steps {
             git credentialsId: 'f5d48fb8-f02a-4b63-afbf-ce46c50d9363', url: 'https://stash.caplin.com/scm/releng/promotionscripts.git'
             sh '''
