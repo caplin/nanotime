@@ -8,7 +8,8 @@ pipeline {
                 }
                steps {
                checkout scm
-                sh ''' #!/bin/bash -xe; ./gradlew printVersion; ./gradlew | grep VERSION | sed  "s/VERSION=//" > pipeline.properties; echo $VERSION
+                sh '''
+                    #!/bin/bash -xe; ./gradlew printVersion; ./gradlew | grep VERSION | sed  "s/VERSION=//" > pipeline.properties; echo $VERSION
                       '''
                 script{
                        VERSION=readFile('pipeline.properties')
