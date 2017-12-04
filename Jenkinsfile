@@ -8,7 +8,8 @@ pipeline {
                 }
                steps {
                checkout scm
-                sh ''' ./gradlew | grep VERSION | sed  "s/VERSION=//" > pipeline.properties
+                sh ''' #!/bin/bash -xe
+                 ./gradlew | grep VERSION | sed  "s/VERSION=//" > pipeline.properties
                       '''
                 script{
                        VERSION=readFile('pipeline.properties')
@@ -25,7 +26,7 @@ pipeline {
                     }
                     steps {
                         checkout scm
-                        bat  "gradlew.bat clean publishDistributablePublicationToMavenRepository -Pversion=${env.VERSION}"
+                        bat  "gradlew.bat clean publishDistributablePublicationToMavenRepository -Pversion=${VERSION}"
                 }
                 }
                 stage('Build Linux') {
@@ -34,7 +35,8 @@ pipeline {
                     }
                     steps {
                         checkout scm
-                        sh '''./gradlew clean publishDistributablePublicationToMavenRepository -Pversion=${env.VERSION}'''
+                        sh ''' #!/bin/bash -xe
+                        ./gradlew clean publishDistributablePublicationToMavenRepository -Pversion=${VERSION}'''
                     }
                 }
                 stage('Build Darwin') {
@@ -43,7 +45,8 @@ pipeline {
                              }
                              steps {
                                     checkout scm
-                                    sh '''./gradlew clean publishDistributablePublicationToMavenRepository -Pversion=${env.VERSION}'''
+                                    sh ''' #!/bin/bash -xe
+                                    ./gradlew clean publishDistributablePublicationToMavenRepository -Pversion=${VERSION}'''
                                     }
                                 }
 
@@ -55,7 +58,8 @@ pipeline {
         }
         steps {
             checkout scm
-            sh '''./gradlew clean publishAllPlatformsJarPublicationToMavenRepository -Pversion=${env.VERSION}'''
+            sh ''' #!/bin/bash -xe
+            ./gradlew clean publishAllPlatformsJarPublicationToMavenRepository -Pversion=${VERSION}'''
         }
         }
 
@@ -66,7 +70,8 @@ pipeline {
 
                     steps {
                     git credentialsId: 'f5d48fb8-f02a-4b63-afbf-ce46c50d9363', url: 'https://stash.caplin.com/scm/releng/promotionscripts.git'
-                    sh '''./gradlew clean PromoteToCaplinRC -Pversion=${env.VERSION} -PconfigFile=Platform/JavaDev/NanoTime.json'''
+                    sh ''' #!/bin/bash -xe
+                    ./gradlew clean PromoteToCaplinRC -Pversion=${VERSION} -PconfigFile=Platform/JavaDev/NanoTime.json'''
                     }
                 }
     }
