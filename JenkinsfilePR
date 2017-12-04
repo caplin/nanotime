@@ -1,6 +1,11 @@
 pipeline {
     agent none
 
+    environment {
+            version
+    }
+
+
     parameters {
                 string(name: 'version', defaultValue: "${VERSION}", description: '')
                 }

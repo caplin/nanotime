@@ -5,8 +5,24 @@ pipeline {
                 string(name: 'version', defaultValue: "${VERSION}", description: '')
                 }
     stages {
+        stage ('Get Version') {
+            agent {
+                label 'build && java8 && centos6'
+                }
+               steps {
+               checkout scm
+                sh '''echo (./gradlew | grep VERSION | sed "s/VERSION/version/") > pipeline.properties
+                      '''
+                      }
+                script{
+                      VERSION=readFile('pipeline.properties')
+                      }
+
+        }
+
         stage('Build Distributables') {
             parallel {
+
                 stage('Build Windows') {
                     agent {
                         label 'build && java8 && windows10 && msbuild'
