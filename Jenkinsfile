@@ -1,6 +1,10 @@
 pipeline {
     agent none
 
+    environment={
+    VERSION=readFile('pipeline.properties')
+    }
+
     stages {
         stage('Get Version') {
             agent {
