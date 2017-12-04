@@ -2,7 +2,7 @@ pipeline {
     agent none
 
     stages {
-        stage ('Get Version') {
+        stage('Get Version') {
             agent {
                 label 'build && java8 && centos6'
                 }
@@ -16,7 +16,6 @@ pipeline {
                       }
 
         }
-
         stage('Build Distributables') {
             parallel {
 
