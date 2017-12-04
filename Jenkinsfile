@@ -55,7 +55,7 @@ pipeline {
         }
         steps {
             checkout scm
-            sh '''./gradlew clean publishAllPlatformsJarPublicationToMavenRepository -Pversion=${VERSION} -PconfigFile=Platform/JavaDev/NanoTime.json'''
+            sh '''./gradlew clean publishAllPlatformsJarPublicationToMavenRepository -Pversion=${VERSION}'''
         }
         }
 
@@ -66,7 +66,7 @@ pipeline {
 
                     steps {
                     git credentialsId: 'f5d48fb8-f02a-4b63-afbf-ce46c50d9363', url: 'https://stash.caplin.com/scm/releng/promotionscripts.git'
-                    sh '''./gradlew clean PromoteToCaplinRC -Pversion=${VERSION}'''
+                    sh '''./gradlew clean PromoteToCaplinRC -Pversion=${VERSION} -PconfigFile=Platform/JavaDev/NanoTime.json'''
                     }
                 }
     }
