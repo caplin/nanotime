@@ -1,9 +1,6 @@
 pipeline {
     agent none
 
-    parameters {
-                string(name: 'version', defaultValue: "${VERSION}", description: '')
-                }
     stages {
         stage ('Get Version') {
             agent {
@@ -29,7 +26,7 @@ pipeline {
                     }
                     steps {
                         checkout scm
-                        bat  "gradlew.bat clean publishDistributablePublicationToMavenRepository -Pversion=${version}"
+                        bat  "gradlew.bat clean publishDistributablePublicationToMavenRepository -Pversion=${VERSION}"
                 }
                 }
                 stage('Build Linux') {
