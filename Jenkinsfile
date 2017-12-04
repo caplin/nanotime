@@ -12,7 +12,7 @@ pipeline {
                       '''
                 script{
                        VERSION=readFile('pipeline.properties')
-                       echo $VERSION
+                       echo ${env.VERSION}
                        }
                       }
 
