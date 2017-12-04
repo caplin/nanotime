@@ -10,9 +10,9 @@ pipeline {
                checkout scm
                 sh '''echo (./gradlew | grep VERSION | sed "s/VERSION/version/") > pipeline.properties
                       '''
-                      }
                 script{
-                      VERSION=readFile('pipeline.properties')
+                       VERSION=readFile('pipeline.properties')
+                       }
                       }
 
         }
