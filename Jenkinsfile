@@ -12,7 +12,6 @@ pipeline {
                       '''
                 script{
                        VERSION=readFile('pipeline.properties')
-                       echo ${env.VERSION}
                        }
                       }
 
