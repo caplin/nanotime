@@ -55,7 +55,7 @@ pipeline {
         }
         steps {
             checkout scm
-            sh '''./gradlew clean publishAllPlatformsJarPublicationToMavenRepository -Pversion=${VERSION}'''
+            sh '''./gradlew clean publishAllPlatformsJarPublicationToMavenRepository -Pversion=${VERSION} -PconfigFile=Platform/JavaDev/NanoTime.json'''
         }
         }
 
