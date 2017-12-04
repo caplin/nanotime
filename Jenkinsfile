@@ -34,8 +34,7 @@ pipeline {
                     }
                     steps {
                         checkout scm
-                        sh '''export VERSION=$(./gradlew | grep VERSION | sed "s/VERSION/version/")
-                              ./gradlew clean publishDistributablePublicationToMavenRepository -Pversion=${VERSION}'''
+                        sh '''./gradlew clean publishDistributablePublicationToMavenRepository -Pversion=${VERSION}'''
                     }
                 }
                 stage('Build Darwin') {
@@ -44,8 +43,7 @@ pipeline {
                              }
                              steps {
                                     checkout scm
-                                    sh '''export VERSION=$(./gradlew | grep VERSION | sed "s/VERSION/version/")
-                                          ./gradlew clean publishDistributablePublicationToMavenRepository -Pversion=${VERSION}'''
+                                    sh '''./gradlew clean publishDistributablePublicationToMavenRepository -Pversion=${VERSION}'''
                                     }
                                 }
 
@@ -57,8 +55,7 @@ pipeline {
         }
         steps {
             checkout scm
-            sh '''export VERSION=$(./gradlew | grep VERSION | sed "s/VERSION/version/")
-                  ./gradlew clean publishAllPlatformsJarPublicationToMavenRepository -Pversion=${VERSION}'''
+            sh '''./gradlew clean publishAllPlatformsJarPublicationToMavenRepository -Pversion=${VERSION}'''
         }
         }
     }
