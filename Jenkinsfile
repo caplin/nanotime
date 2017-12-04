@@ -34,7 +34,7 @@ pipeline {
                     }
                     steps {
                         checkout scm
-                        sh " #!/bin/bash -xe; ./gradlew clean publishDistributablePublicationToMavenRepository -Pversion=${VERSION}""
+                        sh " #!/bin/bash -xe; ./gradlew clean publishDistributablePublicationToMavenRepository -Pversion=${VERSION}"
                     }
                 }
                 stage('Build Darwin') {
