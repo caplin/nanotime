@@ -1,7 +1,7 @@
 pipeline {
     agent none
 
-    environment={
+    environment{
     VERSION=readFile('pipeline.properties')
     }
 
