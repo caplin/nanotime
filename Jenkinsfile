@@ -38,7 +38,7 @@ pipeline {
                     }
                     steps {
                         checkout scm
-                        bash '''
+                        sh '''
                          #!/bin/bash +x
                           ./gradlew clean publishDistributablePublicationToMavenRepository -Pversion=${VERSION}
                           '''
