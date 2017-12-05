@@ -62,7 +62,8 @@ pipeline {
         }
         steps {
             checkout scm
-            sh  """ #!/bin/bash +x; ./gradlew clean publishAllPlatformsJarPublicationToMavenRepository -Pversion=${VERSION} """
+            sh  """ #!/bin/bash +x;
+            ./gradlew clean publishAllPlatformsJarPublicationToMavenRepository -Pversion=$VERSION """
         }
         }
 
