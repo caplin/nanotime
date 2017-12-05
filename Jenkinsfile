@@ -62,7 +62,7 @@ pipeline {
         }
         steps {
             checkout scm
-            sh  " #!/bin/bash +x; ./gradlew clean publishAllPlatformsJarPublicationToMavenRepository -Pversion=${VERSION}"
+            sh  """ #!/bin/bash +x; ./gradlew clean publishAllPlatformsJarPublicationToMavenRepository -Pversion=${VERSION} """
         }
         }
 
@@ -74,7 +74,7 @@ pipeline {
                     dir ('promotion'){
                     git credentialsId: 'f5d48fb8-f02a-4b63-afbf-ce46c50d9363', url: 'https://stash.caplin.com/scm/releng/promotionscripts.git'
                     sh """ #!/bin/bash +x
-                        cd promotion/
+                        echo $PWD
                       ./gradlew PromoteToCaplinRC -Dversion=${VERSION} -PconfigFile=Platform/JavaDev/NanoTime.json -Pbranch=master
                       """
                     }}
