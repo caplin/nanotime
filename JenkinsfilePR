@@ -1,24 +1,34 @@
 pipeline {
     agent none
-
-    environment {
-            version
-    }
-
-
-    parameters {
-                string(name: 'version', defaultValue: "${VERSION}", description: '')
-                }
     stages {
+        stage('Get Version') {
+            agent {
+                label 'build && java8 && centos6'
+                }
+               steps {
+               checkout scm
+                sh '''
+                    #!/bin/bash +x
+                     ./gradlew printVersion
+                      ./gradlew | grep VERSION | sed  "s/VERSION=//" > pipeline.properties
+                       cat pipeline.properties
+                      '''
+                script{
+                       VERSION=readFile('pipeline.properties')
+                       }
+                      }
+
+        }
         stage('Build Distributables') {
             parallel {
+
                 stage('Build Windows') {
                     agent {
                         label 'build && java8 && windows10 && msbuild'
                     }
                     steps {
                         checkout scm
-                        bat  "gradlew.bat clean publishDistributablePublicationToMavenRepository -Pversion=${version}"
+                        bat  "gradlew.bat clean publishDistributablePublicationToMavenRepository -Pversion=${VERSION}"
                 }
                 }
                 stage('Build Linux') {
@@ -27,8 +37,9 @@ pipeline {
                     }
                     steps {
                         checkout scm
-                        sh '''export VERSION=$(./gradlew | grep VERSION | sed "s/VERSION/version/")
-                              ./gradlew clean publishDistributablePublicationToMavenRepository -Pversion=${VERSION}'''
+                        sh  """ #!/bin/bash +x;
+                            ./gradlew clean publishDistributablePublicationToMavenRepository -Pversion=$VERSION
+                            """
                     }
                 }
                 stage('Build Darwin') {
@@ -37,12 +48,12 @@ pipeline {
                              }
                              steps {
                                     checkout scm
-                                    sh '''export VERSION=$(./gradlew | grep VERSION | sed "s/VERSION/version/")
-                                          ./gradlew clean publishDistributablePublicationToMavenRepository -Pversion=${VERSION}'''
+                                    sh """ #!/bin/bash +x;
+                                     ./gradlew clean publishDistributablePublicationToMavenRepository -Pversion=$VERSION
+                                     """
                                     }
                                 }
-
-            }
         }
+      }
     }
  }
