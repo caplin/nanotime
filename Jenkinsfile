@@ -71,8 +71,8 @@ pipeline {
                         label 'build && linux && gradle'
                     }
                     steps {
-                    dir ('promotion'){
                     git credentialsId: 'f5d48fb8-f02a-4b63-afbf-ce46c50d9363', url: 'https://stash.caplin.com/scm/releng/promotionscripts.git'
+                    dir ('promotionscripts'){
                     sh """ #!/bin/bash +x
                         echo $PWD
                       ./gradlew PromoteToCaplinRC -Dversion=${VERSION} -PconfigFile=Platform/JavaDev/NanoTime.json -Pbranch=master
