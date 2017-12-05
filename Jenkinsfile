@@ -39,7 +39,6 @@ pipeline {
                     steps {
                         checkout scm
                         sh  " #!/bin/bash +x; ./gradlew clean publishDistributablePublicationToMavenRepository -Pversion=${VERSION}"
-
                     }
                 }
                 stage('Build Darwin') {
@@ -48,10 +47,7 @@ pipeline {
                              }
                              steps {
                                     checkout scm
-                                    sh '''
-                                    #!/bin/bash +x
-                                     ./gradlew clean publishDistributablePublicationToMavenRepository -Pversion=${VERSION}
-                                     '''
+                                    sh " #!/bin/bash +x; ./gradlew clean publishDistributablePublicationToMavenRepository -Pversion=${VERSION}"
                                     }
                                 }
 
@@ -63,10 +59,7 @@ pipeline {
         }
         steps {
             checkout scm
-            sh  '''
-             #!/bin/bash +x
-             ./gradlew clean publishAllPlatformsJarPublicationToMavenRepository -Pversion=${VERSION}
-             '''
+            sh  " #!/bin/bash +x; ./gradlew clean publishAllPlatformsJarPublicationToMavenRepository -Pversion=${VERSION}"
         }
         }
 
@@ -74,13 +67,9 @@ pipeline {
                     agent {
                         label 'jenkins-cent7-004.caplin.com'
                     }
-
                     steps {
                     git credentialsId: 'f5d48fb8-f02a-4b63-afbf-ce46c50d9363', url: 'https://stash.caplin.com/scm/releng/promotionscripts.git'
-                    sh '''
-                        #!/bin/bash +x
-                         ./gradlew clean PromoteToCaplinRC -Pversion=${VERSION} -PconfigFile=Platform/JavaDev/NanoTime.json
-                    '''
+                    sh " #!/bin/bash +x;  ./gradlew clean PromoteToCaplinRC -Pversion=${VERSION} -PconfigFile=Platform/JavaDev/NanoTime.json "
                     }
                 }
     }
