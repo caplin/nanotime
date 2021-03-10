@@ -1,6 +1,6 @@
 plugins {
     id "me.champeau.gradle.jmh" version "0.4.4"
-    id "com.github.breadmoirai.github-release" version "2.2.12"
+    id "com.github.breadmoirai.github-release" version "1.0.9"
 }
 import org.gradle.internal.os.OperatingSystem;
 
