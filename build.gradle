@@ -192,12 +192,12 @@ githubRelease {
         project.ext.set('githubToken', '')
     }
 
-    token = project.githubToken
+    token = "test"
     repo = "nanotime"
     owner = "caplin"
-    tagName = "${project.version}"
+    tagName = "test2"
     targetCommitish = "master"
-    body = "Caplin Nanotime version ${version}"
+    body = "Caplin Nanotime version test"
     draft = true
     prerelease = false
     releaseAssets = fileTree('build/'){
