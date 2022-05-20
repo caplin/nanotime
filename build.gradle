@@ -5,7 +5,7 @@ plugins {
 import org.gradle.internal.os.OperatingSystem;
 
 apply from: 'version.gradle'
-apply from: 'caplin-version-1.2.0.gradle'
+apply from: 'caplin-version-2.3.1.gradle'
 
 apply plugin: 'java'
 apply plugin: 'c'
@@ -27,12 +27,16 @@ configurations {
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
 
-    distributables group: 'com.caplin.platform.components.codelibrary', name: 'nanotime', version: version, ext: 'dll'
-    distributables group: 'com.caplin.platform.components.codelibrary', name: 'nanotime', version: version, ext: 'dylib'
-    distributables group: 'com.caplin.platform.components.codelibrary', name: 'nanotime', version: version, ext: 'so'
+    distributables files("lib/nanotime.dll");
+    distributables files("lib/nanotime.dylib");
+    distributables files("lib/nanotime.so");
+    distributables files("lib/nanotime-ARM.so");
 
     github group: 'com.caplin.platform.components.codelibrary', name: 'nanotime', version: version, ext: 'jar'
 }
+
+sourceCompatibility = "1.8"
+targetCompatibility = "1.8"
 
 // Set up platform specific configuration
 project.ext {
@@ -52,6 +56,11 @@ project.ext {
         headersDir = 'darwin'
         extension = 'dylib'
         platformClassifier = 'darwin'
+    } else {
+        distributableName = 'libnanotime-ARM'
+        headersDir = 'linux'
+        extension = 'so'
+        platformClassifier = 'linux'
     }
 }
 
@@ -129,7 +138,7 @@ task buildAllPlatformsJar(type: Jar) {
     from sourceSets.main.output
     into('native') {
         from configurations.distributables
-        rename { String fileName -> "nanotime." + fileName.tokenize('.').last() }
+        //rename { String fileName -> "nanotime." + fileName.tokenize('.').last() }
     }
 }
 

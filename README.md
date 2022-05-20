@@ -11,6 +11,7 @@ Nanosecond precision timestamps are supported by the following operating systems
 * Windows 7
 * Windows 10
 * Apple macOS 10.12 (Sierra) and higher
+* ARM platforms
 
 ## Building the project
 To build the project, run:
@@ -19,7 +20,7 @@ To build the project, run:
 ```
 This will build the C distributable for your platform, and package it up in the jar.
 
-To amalgamate distributables for all supported platforms (Linux, Windows and Mac), run:
+To amalgamate distributables for all supported platforms (Linux, Windows, Arm and Mac), run:
 ```
 buildAllPlatformsJar
 ```

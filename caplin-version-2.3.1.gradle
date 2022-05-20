@@ -1,0 +1,233 @@
+// VARIABLES
+
+// HASH_LENGTH sets the number of characters in the hash on the end of the version number
+Integer HASH_LENGTH = project.ext.properties.hashLength ?: 7
+// NO_COMMIT_COUNT specifies whether to omit the commit count from the version number
+Boolean NO_COMMIT_COUNT = project.ext.properties.noCommitCount ?: false
+// DEFAULT_CHANGELIST sets the build number suffix for non-CI builds
+String DEFAULT_CHANGELIST = "dev"
+// BRANCH_METHOD defines the method for finding the git branch name
+// Available options are 'env' and 'cmd'
+String BRANCH_METHOD = "env"
+
+// MAIN
+// Please be careful editing anything underneath here as this could have serious consequences on ALL BUILDS
+def is_jenkins_ci = (System.getenv('BUILD_NUMBER') != null)
+def is_gitlab_ci = (System.getenv('CI_COMMIT_SHA') != null)
+def perforce_changelist = System.getenv('P4_CHANGELIST')
+
+// COMMITS_COUNT_OVERRIDE sets the commit count to the passed in value
+Integer commitsNumberOverride = System.getenv('COMMITS_COUNT_OVERRIDE')?.isInteger() ? System.getenv('COMMITS_COUNT_OVERRIDE').toInteger() : null
+
+/*
+ * Standarises the way we find the branch name
+ */
+String getBranchName(String branch_method, Boolean is_gitlab_ci) {
+    switch(branch_method) {
+        case 'cmd':
+            return getBranchNameByCmd()
+            break
+        default:
+            return getBranchNameByEnv(is_gitlab_ci)
+            break
+    }
+}
+
+/*
+ * Gets the hash name
+ */
+String getHash(Integer hash_length, Boolean is_gitlab_ci) {
+    if (is_gitlab_ci) {
+        return System.getenv('CI_COMMIT_SHA').substring(0, hash_length)
+    }
+
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'rev-parse', "--short=${hash_length}", 'HEAD'
+        standardOutput = stdout
+    }
+    return stdout.toString().trim()
+}
+
+/*
+ * Gets the total number of commits
+ */
+Integer getNumberOfCommits(commitsNumberOverride, Boolean is_gitlab_ci) {
+    if (commitsNumberOverride != null) {
+        return commitsNumberOverride
+    }
+
+    if (is_gitlab_ci){
+        return System.getenv('CI_PIPELINE_IID').toInteger()
+    } 
+    
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'rev-list', 'HEAD'
+        standardOutput = stdout
+    }
+    int commitsNumber = 0
+    stdout.toString().eachLine { commitsNumber++ }
+
+    return commitsNumber
+    
+}
+
+/*
+ * Gets branch name based on git branch
+ */
+String getBranchNameByCmd() {
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'branch'
+        standardOutput = stdout
+    }
+    stdout.toString().eachLine {
+        if (it.startsWith("*")) {
+            return it.toLowerCase().replaceFirst("^\\* ", "")
+        }
+    }
+}
+
+/*
+ * Gets branch name based on GIT_BRANCH_ENV_NAME
+ */
+String getBranchNameByEnv(Boolean is_gitlab_ci) {
+    if (is_gitlab_ci) {
+        return System.getenv('CI_COMMIT_BRANCH')
+    }
+
+    return System.getenv('GIT_BRANCH').replaceFirst('origin/', '')
+}
+
+String getPrId() {
+    //return "-PR" + System.getenv('pullRequestId')
+    return "-PR" + System.getenv('CI_MERGE_REQUEST_IID')
+}
+
+/*
+ * Gets branch name based on GIT_BRANCH_ENV_NAME
+ */
+String getShortBranchName(branch_method, is_gitlab_ci) {
+    def gitBranchName = getBranchName(branch_method, is_gitlab_ci)
+    if (gitBranchName != null) {
+        gitBranchName = gitBranchName.replaceFirst("^\\* ", "")
+        def prefix = gitBranchName.replaceFirst(~/[^\/]+$/, '')
+        gitBranchName = gitBranchName.replaceFirst(prefix, '')
+    }
+    return gitBranchName
+}
+
+/*
+ * Override environment variable to prevent appending featue branch to the end
+ * of the version for non-standard release branches
+*/
+
+boolean checkPluginOverride() {
+    return (System.getenv('VERSION_PLUGIN_OVERRIDE').toString().equals("false"));
+}
+
+/*
+ * Works out if the current branch is the main branch
+ */
+boolean isMainBranch(branch_method, is_gitlab_ci) {
+    def gitBranchName = getBranchName(branch_method, is_gitlab_ci)
+    def branches = ["master"] // default main branch
+
+    if (project.hasProperty('mainBranches')) {
+        branches = ext.mainBranches
+    }
+    if (gitBranchName != null) {
+        return branches.any { gitBranchName.toLowerCase() == it }
+        }
+    return false
+}
+
+/*
+ * Works out if the branch is a Support branch
+ */
+boolean isSupport(branch_method, is_gitlab_ci) {
+    def isSupport = false
+    def gitBranchName = getBranchName(branch_method, is_gitlab_ci)
+    if (gitBranchName != null) {
+        if (gitBranchName.toLowerCase().startsWith('support/') || gitBranchName.toLowerCase().startsWith('support-')) {
+            isSupport = true
+        }
+    }
+    return isSupport
+}
+
+/*
+ * Works out if the branch is a Release branch
+ */
+boolean isRelease(branch_method, is_gitlab_ci) {
+    def isRelease = false
+    def gitBranchName = getBranchName(branch_method, is_gitlab_ci)
+    if (gitBranchName != null) {
+        if (gitBranchName.toLowerCase().startsWith('release/') || gitBranchName.toLowerCase().startsWith('release-')) {
+            isRelease = true
+        }
+    }
+    return isRelease
+}
+
+/*
+ * Works out if the branch is a Hotfix branch
+ */
+boolean isHotfix(branch_method, is_gitlab_ci) {
+    def isHotfix = false
+    def gitBranchName = getBranchName(branch_method, is_gitlab_ci)
+    if (gitBranchName != null) {
+        if (gitBranchName.toLowerCase().startsWith('hotfix/') || gitBranchName.toLowerCase().startsWith('hotfix-')) {
+            isHotfix = true
+        }
+    }
+    return isHotfix
+}
+
+def CHANGELIST = DEFAULT_CHANGELIST
+if (is_jenkins_ci || is_gitlab_ci) {
+    if (perforce_changelist != null) {
+        CHANGELIST = perforce_changelist
+    } else {
+        def featureBranchName = !isMainBranch(BRANCH_METHOD, is_gitlab_ci) && !isRelease(BRANCH_METHOD, is_gitlab_ci) && !isSupport(BRANCH_METHOD, is_gitlab_ci) && !isHotfix(BRANCH_METHOD, is_gitlab_ci) && !checkPluginOverride() && getShortBranchName(BRANCH_METHOD, is_gitlab_ci) != null ? "-${getShortBranchName(BRANCH_METHOD, is_gitlab_ci)}" : ""
+        if (System.getenv('CI_MERGE_REQUEST_IID')) {
+            featureBranchName = getPrId()
+        }
+        if (NO_COMMIT_COUNT) {
+            CHANGELIST = "${getHash(HASH_LENGTH, is_gitlab_ci)}${featureBranchName}"
+        } else {
+            CHANGELIST = "${getNumberOfCommits(commitsNumberOverride, is_gitlab_ci)}-${getHash(HASH_LENGTH, is_gitlab_ci)}${featureBranchName}"
+        }
+    }
+}
+
+String VERSION = "${ext.major}.${ext.minor}.${ext.patch}"
+String FULL_VERSION = "${VERSION}-${CHANGELIST}"
+
+allprojects {
+    version = FULL_VERSION
+}
+
+// Task for printing out the version during builds
+task printVersion {
+    doLast {
+        println "*************************************"
+        println "VERSION=${FULL_VERSION}"
+        println "*************************************"
+    }
+}
+
+// Task for Jenkins to find the version quickly
+task printCIVersion {
+    doLast {
+        println "version=${FULL_VERSION}"
+    }
+}
+
+// Print only CI version with nothing extra
+task printCIVersionOnly {
+    doLast {
+        println "${FULL_VERSION}"
+    }
+}

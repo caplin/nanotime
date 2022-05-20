@@ -1,0 +1,109 @@
+image: "docker.artifactory.caplin.com/pbuild-centos7:1.3.0"
+
+# Disable the Gradle daemon for Continuous Integration servers as correctness
+# is usually a priority over speed in CI environments. Using a fresh
+# runtime for each build is more reliable since the runtime is completely
+# isolated from any previous builds.
+variables:
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+
+before_script:
+  - export GRADLE_USER_HOME=`pwd`/.gradle
+  - export JAVA_HOME=$JAVA11_HOME
+
+
+stages:
+  - build
+  - publish
+  - promote-rc
+  - promote-qa
+
+build:
+  stage: build
+  script: ./gradlew buildAllPlatformsJar --info --stacktrace
+  tags:
+    - platform
+  only:
+    - develop
+    - master
+    - merge_requests
+  cache:
+    key: "$CI_COMMIT_REF_NAME"
+    policy: push
+    paths:
+      - build
+      - .gradle
+
+
+publish:
+  stage: publish
+  tags:
+    - platform
+  only:
+    - develop
+    - master
+    - merge_requests
+  script:
+    - bash -c "export VERSION_PLUGIN_OVERRIDE="true""
+    - ./gradlew publishDistributablePublicationToMavenRepository -x build -x test --info --stacktrace
+    - ./gradlew publishAllPlatformsJarPublicationToMavenRepository -x build -x test --info --stacktrace
+    - echo "VERSION=$(./gradlew printCIVersion --quiet | grep version | awk -F'=' '{print $2}')" >> build.env
+    - echo "VERSION:<$VERSION>"
+  cache:
+    key: "$CI_COMMIT_REF_NAME"
+    policy: pull
+    paths:
+      - build
+      - .gradle
+  artifacts:
+    expire_in: 3 days
+    when: always
+    reports:
+      dotenv: build.env
+
+promote-rc:
+  stage: promote-rc
+  image: jamesseymour0/jfrog-alpine
+  dependencies:
+    - uploadArchives
+  only:
+    - master
+    - develop
+  script:
+    - jfrog rt config --url=https://artifactory.caplin.com/ --user=$ARTIFACTORY_USERNAME --password=$ARTIFACTORY_PASSWORD
+    - jfrog rt cp caplin-ci/com/caplin/platform/components/codelibrary/${VERSION}/ caplin-rc
+    - echo "VERSION=$VERSION" >> build.env
+  tags:
+    - platform
+  cache:
+    key: "$CI_COMMIT_REF_NAME"
+    policy: pull
+    paths:
+      - build
+      - .gradle
+  artifacts:
+    expire_in: 3 days
+    when: always
+    reports:
+      dotenv: build.env
+
+
+promote-qa:
+  stage: promote-qa
+  image: jamesseymour0/jfrog-alpine
+  dependencies:
+    - promote-rc
+  only:
+    - master
+  script:
+    - jfrog rt config --url=https://artifactory.caplin.com/ --user=$ARTIFACTORY_USERNAME --password=$ARTIFACTORY_PASSWORD
+    - jfrog rt cp caplin-rc/com/caplin/platform/components/codelibrary/${VERSION}/ caplin-qa
+    - echo "VERSION=$VERSION" >> build.env
+  tags:
+    - platform
+  when: manual
+  artifacts:
+    expire_in: 3 days
+    when: always
+    reports:
+      dotenv: build.env

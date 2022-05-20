@@ -33,6 +33,11 @@ public class NanoClock extends Clock {
         String os = System.getProperty("os.name").toLowerCase();
         String extension = "." + (os.contains("win") ? "dll" : os.contains("mac") ? "dylib" : "so");
 
+        // Check architecure for running on ARM systems, then load the ARM .so flavor
+        if (System.getProperty("os.arch").toLowerCase().equals("arm")){
+            nativeLibrary = nativeLibrary + "-ARM";
+        }
+
         // Create a temporary file for the distributable, we cannot load it from the jar.
         File temp = File.createTempFile(nativeLibrary, extension);
         if (!temp.exists()) {
